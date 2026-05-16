@@ -1,0 +1,26 @@
+
+# --- Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Ambientes Virtuais e Dependencias
+venv/
+.venv/
+env/
+
+# --- Variáveis de Ambiente
+.env
+.env.local
+secrets.json
+*.pem
+*.crt
+
+# --- Builds e Distribuição
+dist/
+build/
+
+# --- Arquivos de Sistema e Logs
+.DS_Store
+Thumbs.db
+*.log
