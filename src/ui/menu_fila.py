@@ -58,11 +58,11 @@ def ui_fila():
     # ================= BOTÕES DE CONTROLE =================
     col1, col2 = st.columns(2)
 
-    if col1.button("Atualizar fila"):
+    if col1.button("Atualizar fila", use_container_width=True):
         fila.atualizar_fila()
         st.rerun()
 
-    if col2.button("Atender próximo"):
+    if col2.button("Atender próximo", use_container_width=True):
         ok, msg = service.atender()
 
         if ok:
@@ -72,8 +72,7 @@ def ui_fila():
 
         st.rerun()
 
-    # ================= DESFAZER ÚLTIMA AÇÃO =================
-    if st.button("Desfazer última ação"):
+    if st.button("Desfazer última ação", use_container_width=True):
 
         ok, msg = service.desfazer()
 
