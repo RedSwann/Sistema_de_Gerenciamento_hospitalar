@@ -1,13 +1,18 @@
-from structures.no_fila import NoFila
-
-# Escala Manchester
-MANCHERSTER_SCORE = {
+# 
+ESCALA_URGENCIA = {
     "Vermelho": 100,
     "Laranja": 75,
     "Amarelo": 50,
     "Verde": 25
 }
 
+class NoFila:
+    def __init__(self, paciente, nivel):
+        self.paciente = paciente
+        self.nivel = nivel
+        self.tempo_espera = 0
+        self.proximo = None
+        self.pontuacao = 0
 
 class FilaAtendimento:
 
@@ -57,12 +62,12 @@ class FilaAtendimento:
         self.inicio = self.inicio.proximo
 
         # aumenta tempo dos outros pacientes
-        self._incrementar_tempo()
+        self._atualizar_fila()
 
         return removido
 
     # =========================
-    # ATUALIZA TEMPO (ação manual)
+    # ATUALIZA TEMPO DE ESPERA
     # =========================
     def atualizar_fila(self):
 
@@ -76,21 +81,7 @@ class FilaAtendimento:
         self._reordenar()
 
     # =========================
-    # INCREMENTA TEMPO (após atendimento)
-    # =========================
-    def _incrementar_tempo(self):
-
-        atual = self.inicio
-
-        while atual:
-            atual.tempo_espera += 1
-            self._calcular_pontuacao(atual)
-            atual = atual.proximo
-
-        self._reordenar()
-
-    # =========================
-    # CÁLCULO DE PONTUAÇÃO INTERNA
+    # CÁLCULO DE PONTUAÇÃO (URGÊNCIA)
     # =========================
     def _calcular_pontuacao(self, no):
 
@@ -99,7 +90,7 @@ class FilaAtendimento:
         tempo = no.tempo_espera
 
         no.pontuacao = (
-            MANCHERSTER_SCORE[no.nivel] * 0.5 +
+            ESCALA_URGENCIA[no.nivel] * 0.5 +
             tempo * 0.25 +
             idade * 0.15 +
             deficiencia * 0.10

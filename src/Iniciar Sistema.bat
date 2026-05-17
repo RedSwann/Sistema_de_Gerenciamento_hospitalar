@@ -1,2 +1,2 @@
 cd /d "%~dp0"
-py -m streamlit run Menu.py
+py -m streamlit run app.py
