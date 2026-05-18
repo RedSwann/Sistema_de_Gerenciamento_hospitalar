@@ -112,7 +112,7 @@ UNIVERSIDADE DE SÃO PAULO (USP). Pilhas. Instituto de Matemática e Estatístic
 ║               │                 │  │                    │  │                  │                   ║
 ║               │ • Cadastrar     │  │ • Nome             │  │ • Visualizar     │                   ║
 ║               │ • Fila          │  │ • Idade            │  │ • Chamar Próx.   │                   ║
-║               │ • Historico     │  │ • CPF              │  │ • Remover        │                   ║
+║               │                 │  │ • CPF              │  │ • Remover        │                   ║
 ║               │                 │  │ • Telefone         │  │ • Atualizar      │                   ║
 ║               │                 │  │ • portador de      │  │                  │                   ║
 ║               │                 │  │   deficiencia      │  │                  │                   ║
@@ -168,19 +168,26 @@ Primeiramente, a camada de apresentação (UI/CLI) recebe as informações digit
 ```
 /
 ├── src/
-│   ├── data/
-│   ├── models/
-│   ├── pages/
-│   ├── structures/  
-│   └── Menu.py
+│   └── core/
+│       ├── fila_atendimento.py
+│       ├── paciente.py
+│       └── pilha_acoes.py
+│   └── service/
+│           fila_service.py
+│           paciente_service.py
+│   └── ui/  
+│       ├── menu_fila.py
+│       ├── menu_cadastro.py
+│       └── menu_inicial.py
 ├── tests
+│      test_fila.py
+│      test_paciente.py
+│      test_pilha.py
 └── README.md
 ```
 
 **Justificativa de desvios (se houver):**
-Houve desvios pois a estrutura do nosso projeto foi adaptada em relação ao modelo sugerido para adaptar as necessidades da aplicação desenvolvida.
-Nosso sistema utiliza Streamlit como interface, que torna mais adequado utilizar a interface na pasta "pages/", seguindo o padrão do framework.
-Tambem organizamos a logica em "structures/" que é responsavel pelas estruturas de dados, e "models/" pelas entidades.
+Sem desvios
 
 ---
 
