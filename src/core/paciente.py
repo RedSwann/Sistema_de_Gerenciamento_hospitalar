@@ -15,7 +15,7 @@ class ListaPacientes:
 
     def __init__(self):
         self.inicio = None
-        self.arquivo = "data/pacientes.json"
+        self.arquivo = "src/data/pacientes.json"
         self.carregar_json()
 
     # =========================
