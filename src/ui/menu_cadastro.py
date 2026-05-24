@@ -1,6 +1,7 @@
 import streamlit as st
 from core.paciente import ListaPacientes
 from service.paciente_service import PacienteService
+from core.pilha_acoes import Pilha
 
 
 def ui_cadastro():
@@ -13,9 +14,13 @@ def ui_cadastro():
     if "lista" not in st.session_state:
         st.session_state.lista = ListaPacientes()
 
+    if "historico" not in st.session_state:
+        st.session_state.historico = Pilha()
+
     if "paciente_service" not in st.session_state:
         st.session_state.paciente_service = PacienteService(
-            st.session_state.lista
+            st.session_state.lista,
+            st.session_state.historico
         )
 
     service = st.session_state.paciente_service
@@ -26,15 +31,23 @@ def ui_cadastro():
 
     st.title("Cadastro de Pacientes")
 
+    if "mensagem_cadastro" in st.session_state:
+        tipo, mensagem = st.session_state.mensagem_cadastro
+        if tipo == "sucesso":
+            st.success(mensagem)
+        else:
+            st.error(mensagem)
+        del st.session_state.mensagem_cadastro
+
     # ================= CADASTRAR PACIENTE =================
     with st.form("form_cadastro"):
 
         c1, c2, c3, c4, c5 = st.columns(5)
 
         nome = c1.text_input("Nome")
-        cpf = c2.text_input("CPF")
-        idade = c3.text_input("Idade")
-        telefone = c4.text_input("Telefone")
+        cpf = c2.text_input("CPF", max_chars=11, placeholder="Somente números")
+        idade = c3.text_input("Idade", max_chars=3, placeholder="Ex: 25")
+        telefone = c4.text_input("Telefone", max_chars=11, placeholder="DDD + número")
         deficiencia = c5.selectbox(
             "Portador de deficiência",
             ["Não", "Sim"]
@@ -57,8 +70,6 @@ def ui_cadastro():
             else:
                 st.error(msg)
 
-            st.rerun()
-
     # ================= EDITAR PACIENTE =================
     if st.session_state.editando:
 
@@ -71,7 +82,7 @@ def ui_cadastro():
 
             nome = st.text_input("Nome", paciente.nome)
             idade = st.number_input("Idade", 0, 120, paciente.idade)
-            telefone = st.text_input("Telefone", paciente.telefone)
+            telefone = st.text_input("Telefone", paciente.telefone, max_chars=11, placeholder="DDD + número")
 
             deficiencia = st.selectbox(
                 "Portador de deficiência",
@@ -97,9 +108,9 @@ def ui_cadastro():
                 st.session_state.editando = None
 
                 if ok:
-                    st.success(msg)
+                    st.session_state.mensagem_cadastro = ("sucesso", msg)
                 else:
-                    st.error(msg)
+                    st.session_state.mensagem_cadastro = ("erro", msg)
 
                 st.rerun()
 
