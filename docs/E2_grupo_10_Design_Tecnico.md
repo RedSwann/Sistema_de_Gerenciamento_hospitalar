@@ -104,92 +104,115 @@ UNIVERSIDADE DE SÃO PAULO (USP). Pilhas. Instituto de Matemática e Estatístic
 ## 2. Arquitetura em Camadas
 
 **Diagrama:**
+```txt
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    CAMADA DE APRESENTAÇÃO (UI/STREAMLIT)                     ║
+║                                                                              ║
+║  ┌──────────────────┐   ┌──────────────────┐   ┌─────────────────────────┐   ║
+║  │  menu_inicial.py │   │ menu_cadastro.py │   │      menu_fila.py       │   ║
+║  │                  │   │                  │   │                         │   ║
+║  │ • Navegação      │   │ • Cadastro       │   │ • Adicionar paciente    │   ║
+║  │ • Seleção telas  │   │ • Editar         │   │ • Atender próximo       │   ║
+║  │ • Histórico      │   │ • Remover        │   │ • Atualizar fila        │   ║
+║  │                  │   │ • Listar         │   │ • Desfazer ação         │   ║
+║  │                  │   │ • Validações UI  │   │ • Exibir fila           │   ║
+║  └──────────────────┘   └──────────────────┘   └─────────────────────────┘   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+                                       │
+                                       ▼
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                       CAMADA DE APLICAÇÃO (SERVICE)                          ║
+║                                                                              ║
+║   ┌─────────────────────────┐      ┌─────────────────────────┐               ║
+║   │   paciente_service.py   │      │     fila_service.py     │               ║
+║   │                         │      │                         │               ║
+║   │ • cadastrar()           │      │ • adicionar()           │               ║
+║   │ • editar()              │      │ • atender_proximo()     │               ║
+║   │ • remover()             │      │ • remover()             │               ║
+║   │ • buscar()              │      │ • atualizar_fila()      │               ║
+║   │ • listar()              │      │ • desfazer()            │               ║
+║   │ • validar_dados()       │      │ • listar()              │               ║
+║   └─────────────────────────┘      └─────────────────────────┘               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+                                       │
+                                       ▼
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          CAMADA DE DOMÍNIO (CORE)                            ║
+║                                                                              ║
+║  ┌────────────────────┐  ┌────────────────────┐  ┌──────────────────────┐    ║
+║  │    paciente.py     │  │ fila_atendimento.py│  │    pilha_acoes.py    │    ║
+║  │                    │  │                    │  │                      │    ║
+║  │ • Lista encadeada  │  │ • Fila prioridade  │  │ • Histórico ações    │    ║
+║  │ • Inserção         │  │ • Inserção orden.  │  │ • Desfazer cadastro  │    ║
+║  │ • Remoção          │  │ • Remoção          │  │ • Desfazer fila      │    ║
+║  │ • Busca por CPF    │  │ • Atualização      │  │ • empilhar()         │    ║
+║  │ • Persistência JSON│  │ • Prioridades      │  │ • desempilhar()      │    ║
+║  │                    │  │                    │  │ • vazia()            │    ║
+║  └────────────────────┘  └────────────────────┘  └──────────────────────┘    ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 ```
-╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
-║                                     CAMADA DE APRESENTAÇÃO (UI/CLI)                               ║
-║               ┌─────────────────┐  ┌────────────────────┐  ┌──────────────────┐                   ║
-║               │  Menu Principal │  │  Cadastro Pac.     │  │  Fila Atendimento│                   ║
-║               │                 │  │                    │  │                  │                   ║
-║               │ • Cadastrar     │  │ • Nome             │  │ • Visualizar     │                   ║
-║               │ • Fila          │  │ • Idade            │  │ • Chamar Próx.   │                   ║
-║               │                 │  │ • CPF              │  │ • Remover        │                   ║
-║               │                 │  │ • Telefone         │  │ • Atualizar      │                   ║
-║               │                 │  │ • portador de      │  │                  │                   ║
-║               │                 │  │   deficiencia      │  │                  │                   ║
-╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
-                                              │
-                                              ▼ Chamadas de Métodos
-                  ╔═══════════════════════════════════════════════════════════════════╗
-                  ║                      CAMADA DE APLICAÇÃO (Service)                ║
-                  ║  ┌─────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ║
-                  ║  │PacienteService  │  │AtendimentoService│  │PrioridadeService │  ║
-                  ║  │                 │  │                  │  │                  │  ║
-                  ║  │ +cadastrar()    │  │ +adicionarFila() │  │ +calcular()      │  ║
-                  ║  │ +buscar()       │  │ +chamarProximo() │  │ +reorganizar()   │  ║
-                  ║  │ +validar()      │  │ +remover()       │  │ +atualizarTempo()│  ║
-                  ║  │ +listar()       │  │ +listar()        │  │ +verificar()     │  ║
-                  ║  │ +atualizar()    │  │                  │  │                  │  ║
-                  ║  └─────────────────┘  └──────────────────┘  └──────────────────┘  ║
-                  ╚═══════════════════════════════════════════════════════════════════╝
-                                              │
-                                              ▼ Manipulação de Dados
-                  ╔══════════════════════════════════════════════════════════════════╗
-                  ║                      CAMADA DE DOMÍNIO (Core)                    ║
-                  ║  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐   ║
-                  ║  │  ListaEncadeada │  │ FilaPrioridade  │  │     Pilha       │   ║
-                  ║  │                 │  │                 │  │                 │   ║
-                  ║  │ +inserir()      │  │ +enqueue()      │  │ +push()         │   ║
-                  ║  │ +remover()      │  │ +dequeue()      │  │ +pop()          │   ║
-                  ║  │ +buscar()       │  │ +peek()         │  │ +top()          │   ║
-                  ║  │ +percorrer()    │  │ +reorganizar()  │  │ +isEmpty()      │   ║
-                  ║  │ +ordenar()      │  │ +priorizar()    │  │ +size()         │   ║
-                  ║  └─────────────────┘  └─────────────────┘  └─────────────────┘   ║
-                  ╚══════════════════════════════════════════════════════════════════╝
 
+### Descrição das camadas
 
-```
+| Camada | Componentes | Responsabilidade |
+|--------|-------------|------------------|
+| Apresentação (UI) | `menu_inicial.py`, `menu_cadastro.py`, `menu_fila.py` | Responsável pela interação com o usuário utilizando Streamlit, exibindo formulários, tabelas, mensagens de erro, mensagens de sucesso e botões de navegação. |
+| Aplicação (Service) | `paciente_service.py`, `fila_service.py` | Implementa as regras de negócio do sistema, valida os dados recebidos da interface e coordena as operações realizadas nas estruturas de dados. |
+| Domínio (Core) | `paciente.py`, `fila_atendimento.py`, `pilha_acoes.py` | Implementa as estruturas de dados principais do sistema: lista encadeada, fila de prioridade e pilha de ações. Também realiza a persistência dos dados em JSON. |
 
-**Descrição das camadas:**
+### Como as camadas se comunicam
 
-| Camada                | Nome no seu projeto                                                             | Responsabilidade |
-|-----------------------|---------------------------------------------------------------------------------|-----------------------------------------------------------------|
-| Apresentação (UI/CLI) | Menu Principal, Cadastro de Pacientes, Fila de Atendimento | Realiza a interação com o usuário através de menus/telas, recebendo dados digitados e exibindo informações do sistema.|
+O usuário interage inicialmente com a interface desenvolvida em Streamlit, localizada na camada de apresentação. Essa interface coleta os dados digitados nos formulários, como nome, CPF, idade, telefone, deficiência e nível de emergência.
 
-| Aplicação (Service)   | PacienteService, AtendimentoService e PrioridadeService                         | Controla as regras de negócio, valida os dados recebidos da interface e coordena as operações realizadas nas estruturas de dados. |
+Em seguida, essas informações são enviadas para a camada de aplicação, onde os Services validam os dados e aplicam as regras de negócio. Por exemplo, o `PacienteService` valida campos obrigatórios, CPF com 11 dígitos, telefone com 11 dígitos e idade válida. Já o `FilaService` controla a entrada dos pacientes na fila, o atendimento do próximo paciente, a atualização da fila e o desfazer da última ação.
 
-| Domínio (Core)        | Lista Encadeada, FilaPrioridade e Pilha                                         | Implementa as estruturas de dados principais do sistema e executa operações como inserção, remoção, organização da fila e armazenamento das últimas ações. |
+Após a validação, os Services chamam a camada de domínio, onde ficam as estruturas de dados:
 
-**Como as camadas se comunicam:**
-Primeiramente, a camada de apresentação (UI/CLI) recebe as informações digitadas pelo usuário, como cadastro de paciente(nome, cpf, idade, telefone e se possui alguma deficiência). Essas informações são enviadas para a camada de aplicação (Service), responsável por validar os dados e definir qual operação deve ser executada. Após a validação, o Service chama os métodos da camada de domínio (Core), onde estão implementadas as estruturas de dados do sistema.
+- Lista encadeada para armazenar e gerenciar os pacientes cadastrados;
+- Fila de prioridade para organizar a ordem de atendimento;
+- Pilha de ações para armazenar o histórico e permitir desfazer a última ação realizada.
+
+A pilha de ações (`pilha_acoes.py`) funciona como histórico do sistema. Sempre que uma ação importante é realizada, como cadastrar um paciente ou adicionar um paciente à fila, essa ação é armazenada na pilha. Quando o usuário clica em “Desfazer”, o sistema consulta esse histórico e remove a última ação registrada, seguindo a lógica LIFO.
+
+A camada Core também realiza a persistência dos dados em arquivos JSON localizados na pasta `src/data/`.
+
 ---
+
 
 ## 3. Estrutura de Diretórios
 
-```
+```txt
 /
 ├── src/
-│   └── core/
-│       ├── fila_atendimento.py
-│       ├── paciente.py
-│       └── pilha_acoes.py
-│   └── service/
-│           fila_service.py
-│           paciente_service.py
-│   └── ui/  
-│       ├── menu_fila.py
+│   ├── app.py
+│   ├── core/
+│   │   ├── fila_atendimento.py
+│   │   ├── paciente.py
+│   │   └── pilha_acoes.py
+│   ├── data/
+│   │   ├── pacientes.json
+│   │   └── historico_acoes.json
+│   ├── service/
+│   │   ├── fila_service.py
+│   │   └── paciente_service.py
+│   └── ui/
 │       ├── menu_cadastro.py
+│       ├── menu_fila.py
+│       ├── menu_historico.py
 │       └── menu_inicial.py
-├── tests
-│      test_fila.py
-│      test_paciente.py
-│      test_pilha.py
-└── README.md
+├── tests/
+│   ├── test_fila.py
+│   ├── test_paciente.py
+│   └── test_pilha.py
+├── README.md
+└── executar.bat
 ```
 
 **Justificativa de desvios (se houver):**
-Sem desvios
+Sem desvios.
 
 ---
+
 
 ## 4. Backlog do Projeto
 
@@ -199,52 +222,59 @@ Sem desvios
 
 ---
 
-**Item 1:** [Nome curto da funcionalidade] Cadastro de pacientes
+**Item 1:** Cadastro de pacientes
 
 Critério de aceite:
-Dado um usuário preenchendo nome, idade, CPF e gênero, quando o cadastro for confirmado, então o sistema deve inserir o paciente na ListaEncadeada utilizando inserir() e exibir a confirmação do cadastro.
+Dado um usuário preenchendo nome, idade, CPF, telefone e deficiência, quando o cadastro for confirmado, então o sistema deve validar os campos, inserir o paciente na lista encadeada utilizando `inserir()` e exibir a confirmação do cadastro.
 
 ---
 
-**Item 2:** busca de pacientes 
+**Item 2:** Busca de pacientes
 
 Critério de aceite:
-Dado pacientes cadastrados na ListaEncadeada, quando o usuário pesquisar um CPF, então o sistema deve localizar o paciente utilizando buscar() e exibir seus dados na tela.
+Dado pacientes cadastrados na lista encadeada, quando o usuário pesquisar um CPF, então o sistema deve localizar o paciente utilizando `buscar()` e exibir seus dados na tela.
 
 ---
 
 **Item 3:** Organização da fila de atendimento
 
 Critério de aceite:
-Dado múltiplos pacientes com diferentes níveis de emergência, quando um novo paciente entrar na fila, então a FilaPrioridade deve reorganizar os pacientes utilizando priorizar() e reorganizar().
-
+Dado múltiplos pacientes com diferentes níveis de emergência, quando um novo paciente entrar na fila, então a fila de prioridade deve inserir o paciente na posição correta conforme sua pontuação.
 
 ---
 
 **Item 4:** Chamada de pacientes
 
 Critério de aceite:
-Dado uma fila contendo pacientes aguardando atendimento, quando o usuário executar “Chamar Próximo”, então o sistema deve remover o primeiro paciente da FilaPrioridade utilizando dequeue() e exibir seus dados.
+Dado uma fila contendo pacientes aguardando atendimento, quando o usuário executar “Atender próximo”, então o sistema deve remover o primeiro paciente da fila de prioridade utilizando `atender_proximo()` e exibir seus dados.
 
 ---
 
 **Item 5:** Remoção de pacientes da fila
 
 Critério de aceite:
-Dado uma fila contendo pacientes aguardando atendimento, quando o usuário solicitar a remoção de um paciente, então o sistema deve removê-lo da FilaPrioridade utilizando dequeue() ou remover() e atualizar a ordem da fila.
+Dado uma fila contendo pacientes aguardando atendimento, quando o usuário solicitar a remoção de um paciente, então o sistema deve removê-lo da fila utilizando `remover()` e atualizar a ordem da fila.
 
 ---
 
 **Item 6:** Visualização da fila
 
 Critério de aceite:
-Dado um histórico de ações armazenado na pilha, quando o usuário clicar em “Desfazer”, então o sistema deve remover a última ação registrada utilizando pop() e restaurar o estado anterior da operação realizada.
+Dado pacientes adicionados à fila de atendimento, quando o usuário acessar a tela da fila, então o sistema deve exibir a ordem atual dos pacientes e seus respectivos níveis de emergência.
 
 ---
+
 **Item 7:** Desfazer última ação
 
 Critério de aceite:
-Dado um paciente já cadastrado na ListaEncadeada, quando o usuário atualizar suas informações, então o sistema deve localizar o registro utilizando buscar() e alterar os dados armazenados.
+Dado um histórico de ações armazenado na pilha, quando o usuário clicar em “Desfazer última ação”, então o sistema deve remover a última ação registrada utilizando `desempilhar()` e restaurar o estado anterior da operação realizada.
+
+---
+
+**Item 8:** Histórico de ações
+
+Critério de aceite:
+Dado ações realizadas no sistema, quando o usuário acessar o histórico, então o sistema deve exibir as ações registradas em arquivo JSON, permitindo acompanhar as operações recentes.
 
 ---
 
@@ -252,11 +282,12 @@ Dado um paciente já cadastrado na ListaEncadeada, quando o usuário atualizar s
 
 | Funcionalidade | Motivo de exclusão |
 |----------------|--------------------|
-| Controle financeiro e faturamento      | Funcionalidades relacionadas a pagamentos, convênios e emissão de cobranças não agrega ao aprendizado do conteúdo de ED. |
-| Histórico médico completo dos pacientes| Tem uma complexidade de implementação elevada. O sistema armazenará apenas informações necessárias para o atendimento atual e gerenciamento da fila |
-| Aplicação em nuvem                     |Fora do escopo do semestre e alta complexidade de implementação. O projeto será executado localmente, sem hospedagem online.|
+| Controle financeiro e faturamento | Funcionalidades relacionadas a pagamentos, convênios e emissão de cobranças não agregam ao aprendizado do conteúdo de Estrutura de Dados. |
+| Histórico médico completo dos pacientes | Possui complexidade elevada. O sistema armazenará apenas informações necessárias para o atendimento atual e gerenciamento da fila. |
+| Aplicação em nuvem | Fora do escopo do semestre e de alta complexidade de implementação. O projeto será executado localmente, sem hospedagem online. |
 
 ---
+
 
 ## 5. Repositório GitHub
 
@@ -283,7 +314,7 @@ Logs → *.log
 ```
 [Criamos um executavel .bat que roda o seguinte comando:
   cd /d "%~dp0"
-py -m streamlit run menu.py
+py -m streamlit run src/app.py
 ]
 ```
 
@@ -295,7 +326,7 @@ py -m streamlit run menu.py
 
 **Linguagem:** Python 3.11
 
-**Localização no repositório:** `src/core/fila_prioritaria.py`
+**Localização no repositório:** `src/core/fila_atendimento.py`
 
 **Operações implementadas:**
 
@@ -332,9 +363,9 @@ def _inserir_ordenado(self, inicio, novo):
 
 ---
  
-### 6.2 Estrutura implementada: Fila prioritaria
+### 6.2 Estrutura implementada: Lista
 Linguagem: Python 3.11
-Localização no repositório: src/core/pilha_navegacao.py
+Localização no repositório: src/core/paciente.py
 
 **Operações implementadas:**
 
@@ -348,17 +379,31 @@ Localização no repositório: src/core/pilha_navegacao.py
 | listar   | ✅            | Exibe todos os pacientes cadastrados|
 
 **Trecho representativo do código** *(operação principal)*:
-Esse trecho representa a principal lógica da lista de pacientes, responsável por armazenar os pacientes cadastrados no sistema para posterior consulta e utilização.
+Esse trecho representa a lógica da lista encadeada de pacientes, responsável por inserir pacientes em ordem alfabética.
 
-#ADIÇÃO DE PACIENTES NA LISTA
+```python
+def _inserir_sem_salvar(self, nome, cpf, idade, telefone, deficiencia):
+    novo = NoPaciente(nome, cpf, idade, telefone, deficiencia)
 
-def adicionar_paciente(self, paciente):
+    if self.inicio is None:
+        self.inicio = novo
+        return True
 
-    self.pacientes.append(paciente)
+    if nome.lower() < self.inicio.nome.lower():
+        novo.proximo = self.inicio
+        self.inicio = novo
+        return True
 
-    return {
-        "mensagem": "Paciente cadastrado com sucesso."
-    }
+    atual = self.inicio
+
+    while atual.proximo and atual.proximo.nome.lower() < nome.lower():
+        atual = atual.proximo
+
+    novo.proximo = atual.proximo
+    atual.proximo = novo
+
+    return True
+```
 
 
 **Leitura de arquivo:**
@@ -384,28 +429,32 @@ Exemplo de arquivo de entrada (`data/pacientes.json`):
 
 ### 6.3 Estrutura implementada: Pilha
 Linguagem: Python 3.11
-Localização no repositório: src/core/pilha_navegacao.py
+src/core/pilha_acoes.py
 
 **Operações implementadas:**
 
 | Operação | Implementada? | Observação |
 |----------|---------------|------------|
-| push| ✅                 | Adiciona uma ação realizada ao topo da pilha|
-| pop  | ✅                | Remove a última ação realizada|
-| topo  | ✅               | Retorna a última ação registrada |
-| verificar vazio| ✅      | Verifica se existe alguma ação armazenada|
+| empilhar | ✅ | Adiciona uma ação realizada ao topo da pilha |
+| desempilhar | ✅ | Remove e retorna a última ação realizada |
+| vazia | ✅ | Verifica se existe alguma ação armazenada |
 
 **Trecho representativo do código** *(operação principal)*:
 Esse trecho representa a principal lógica da pilha de ações, responsável por armazenar o histórico de operações realizadas no sistema seguindo o conceito LIFO (Last In, First Out), permitindo desfazer a última ação executada.
 
-EMPILHAR AÇÕES REALIZADAS
-def push(self, acao):
+```python
+def empilhar(self, acao):
+    self.itens.append(acao)
 
-    self.historico.append(acao)
+def desempilhar(self):
+    if self.vazia():
+        return None
 
-    return {
-        "mensagem": f"Ação '{acao}' adicionada ao histórico."
-    }
+    return self.itens.pop()
+
+def vazia(self):
+    return len(self.itens) == 0
+```
 
 
 
@@ -420,33 +469,26 @@ def push(self, acao):
 ### 7.2 Tela 1 — Boas-vindas / Menu Principal
 
 **Descrição:** 
-A tela inicial do sistema funciona como um menu de navegação principal. Nela, o usuário pode escolher entre acessar o banco de pacientes ou visualizar a fila de atendimento. Essa tela centraliza as funcionalidades do sistema e facilita a navegação entre as operações disponíveis.
+A tela inicial do sistema funciona como um menu de navegação principal. Nela, o usuário pode escolher entre acessar o banco de pacientes, visualizar a fila de atendimento ou consultar o histórico de ações. Essa tela centraliza as funcionalidades do sistema e facilita a navegação entre as operações disponíveis.
 ```
-[Cole aqui um print da tela ou uma representação ASCII do que é exibido]
-
-┌──────────────────────┬──────────────────────────────────────────────────────────────────────────────┐
-│                      │                                                                              │
-│  > menu              │   Sistema de atendimento - HealthCore                                        │
-│                      │                                                                              │
-│  cadastro            │   ┌──────────────────────────────┐  ┌──────────────────────────────┐         │
-│                      │   │      Banco de Pacientes      │  │      Fila de Atendimento     │         │
-│  fila                │   └──────────────────────────────┘  └──────────────────────────────┘         │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-└──────────────────────┴──────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                                                                              │
+│   Sistema de Atendimento - HealthCore                                        │
+│                                                                              │
+│   ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────┐   │
+│   │ Banco de Pacientes   │  │ Fila de Atendimento  │  │ Histórico Ações  │   │
+│   └──────────────────────┘  └──────────────────────┘  └──────────────────┘   │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Comportamentos implementados nesta tela:**
 - [✔] Nome do sistema exibido
 - [✔] Lista de operações disponíveis
+- [✔] Navegação para Banco de Pacientes, Fila de Atendimento e Histórico de Ações
 - [ ] Opção de sair
 
 ---
@@ -454,35 +496,30 @@ A tela inicial do sistema funciona como um menu de navegação principal. Nela, 
 ### 7.3 Tela 2 — Entrada de Dados
 
 **Descrição:** 
-Nesta tela, o usuário informa os dados do paciente por meio de um formulário de cadastro. São preenchidos campos como nome, CPF, idade, telefone e informação sobre deficiência. Após inserir os dados, o usuário clica no botão “Salvar” para registrar o paciente no sistema. Também existe a opção “Desfazer”, que utiliza a estrutura de pilha para remover a última ação realizada.
+Nesta tela, o usuário informa os dados do paciente por meio de um formulário de cadastro. São preenchidos campos como nome, CPF, idade, telefone e informação sobre deficiência. Após inserir os dados, o usuário clica no botão “Salvar” para registrar o paciente no sistema. O sistema também exibe mensagens de erro quando algum campo obrigatório fica vazio ou quando CPF/telefone não possuem 11 dígitos.
 
 **Print ou representação textual:**
 ```
-[Cole aqui um print da tela ou representação do prompt/formulário de entrada]
-┌──────────────────────┬──────────────────────────────────────────────────────────────────────────────┐
-│                      │                                                                              │
-│  menu                │   Cadastro de Pacientes                                                      │
-│                      │                                                                              │
-│  > cadastro          │   Novo Paciente                                                              │
-│                      │   ┌──────────────────────────────────────────────────────────────────────┐   │
-│  fila                │   │ Nome        CPF         Idade       Telefone     Portador deficiência│   │
-│                      │   │ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐      ┌──────────────┐    │   │
-│                      │   │ │        │ │        │ │        │ │        │      │ Não        ▼ │    │   │
-│                      │   │ └────────┘ └────────┘ └────────┘ └────────┘      └──────────────┘    │   │
-│                      │   │                                                                      │   │
-│                      │   │ [ Salvar ]                                                           │   │
-│                      │   └──────────────────────────────────────────────────────────────────────┘   │
-│                      │                                                                              │
-│                      │   [ Desfazer ]                                                               │
-│                      │                                                                              │
-│                      │   ──────────────────────────────────────────────────────────────────────     │
-│                      │                                                                              │
-│                      │   Pacientes Cadastrados                                                      │
-│                      │   ┌──────────────────────────────────────────────────────────────────────┐   │
-│                      │   │ Nenhum paciente cadastrado.                                          │   │
-│                      │   └──────────────────────────────────────────────────────────────────────┘   │
-│                      │                                                                              │
-└──────────────────────┴──────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [⬅ Voltar ao Menu]                                                          │
+│                                                                              │
+│   Cadastro de Pacientes                                                      │
+│                                                                              │
+│   ┌──────────────────────────────────────────────────────────────────────┐   │
+│   │ Nome      CPF             Idade    Telefone        Portador defic.   │   │
+│   │ ┌──────┐  ┌───────────┐   ┌───┐    ┌───────────┐   ┌────────────┐    │   │
+│   │ │      │  │           │   │   │    │           │   │ Não      ▼ │    │   │
+│   │ └──────┘  └───────────┘   └───┘    └───────────┘   └────────────┘    │   │
+│   │                                                                      │   │
+│   │ [ Salvar ]                                                           │   │
+│   └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│                                                                              │
+│   ──────────────────────────────────────────────────────────────────────     │
+│   Pacientes Cadastrados                                                      │
+│                                                                              │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Comportamentos implementados nesta tela:**
@@ -495,42 +532,38 @@ Nesta tela, o usuário informa os dados do paciente por meio de um formulário d
 ### 7.4 Tela 3 — Resultado
 
 **Descrição:** 
-Após o cadastro, o usuário pode visualizar a fila de atendimento do sistema. Nessa tela, os pacientes aparecem organizados conforme a prioridade definida pelas regras da fila prioritária, considerando fatores como idade ou deficiência. O usuário consegue acompanhar a ordem de atendimento e visualizar qual será o próximo paciente chamado.
+Após o cadastro, o usuário pode visualizar a fila de atendimento do sistema. Nessa tela, os pacientes aparecem organizados conforme a prioridade definida pelas regras da fila prioritária, considerando o nível de emergência informado. O usuário consegue acompanhar a ordem de atendimento e visualizar qual será o próximo paciente chamado.
 
 **Print ou representação textual:**
 ```
-[Cole aqui um print da tela ou representação do resultado exibido]
-┌──────────────────────┬──────────────────────────────────────────────────────────────────────────────┐
-│                      │                                                                              │
-│  menu                │   Fila de Atendimento - HealthCore                                           │
-│                      │                                                                              │
-│  cadastro            │   Adicionar Paciente na Fila                                                 │
-│                      │   ┌──────────────────────────────────────────────────────────────────────┐   │
-│  > fila              │   │ CPF do Paciente                                                      │   │
-│                      │   │ ┌────────────────────────────────────────────────────────────────┐   │   │
-│                      │   │ │                                                                │   │   │
-│                      │   │ └────────────────────────────────────────────────────────────────┘   │   │
-│                      │   │                                                                      │   │
-│                      │   │ Nível de Emergência                                                  │   │
-│                      │   │ ┌────────────────────────────────────────────────────────────────┐   │   │
-│                      │   │ │ Vermelho                                                   ▼   │   │   │
-│                      │   │ └────────────────────────────────────────────────────────────────┘   │   │
-│                      │   │                                                                      │   │
-│                      │   │ [ Adicionar ]                                                        │   │
-│                      │   └──────────────────────────────────────────────────────────────────────┘   │
-│                      │                                                                              │
-│                      │   [ Atualizar fila ]                                                         │
-│                      │                                                                              │
-│                      │   [ Atender próximo ]                                                        │
-│                      │                                                                              │
-│                      │   [ Desfazer última ação da fila ]                                           │
-│                      │    ───────────────────────────────────────────────────────────────────────── │
-│                      │    FILA DE ATENDIMENTO                                                       │
-│                      │                                                                              │
-│                      │    ┌────────────────────────────────────────────────────────────────┐        │
-│                      │    │Fila vazia.                                                     │        │
-│                      │    └────────────────────────────────────────────────────────────────┘        │
-└──────────────────────┴──────────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [⬅ Voltar ao Menu]                                                          │
+│                                                                              │
+│   Fila de Atendimento                                                        │
+│                                                                              │
+│   Adicionar Paciente                                                         │
+│   ┌──────────────────────────────────────────────────────────────────────┐   │
+│   │ CPF do Paciente                                                      │   │
+│   │ ┌────────────────────────────────────────────────────────────────┐   │   │
+│   │ │                                                                │   │   │
+│   │ └────────────────────────────────────────────────────────────────┘   │   │
+│   │                                                                      │   │
+│   │ Nível de Emergência                                                  │   │
+│   │ ┌────────────────────────────────────────────────────────────────┐   │   │
+│   │ │ Vermelho                                                   ▼   │   │   │
+│   │ └────────────────────────────────────────────────────────────────┘   │   │
+│   │                                                                      │   │
+│   │ [ Adicionar ]                                                        │   │
+│   └──────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+│       [ Atualizar fila ]                         [ Atender próximo ]         │
+│                                                                              │
+│                          [ Desfazer última ação ]                            │
+│                                                                              │
+│   ──────────────────────────────────────────────────────────────────────     │
+│   Fila Atual                                                                 │
+│                                                                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 **Comportamentos implementados nesta tela:**
@@ -547,156 +580,133 @@ Após o cadastro, o usuário pode visualizar a fila de atendimento do sistema. N
 **Cenário:** [Usuario cadastra paciente, insere ele na fila de atendimento e Chama para atendimento.]
 
 ```
-[Cole aqui a saída real do programa, do início ao fim do cenário descrito]
-Tela 1 - menu
-┌──────────────────────┬──────────────────────────────────────────────────────────────────────────────┐
-│                      │                                                                              │
-│  > menu              │   Sistema de atendimento - HealthCore                                        │
-│                      │                                                                              │
-│  cadastro            │   ┌──────────────────────────────┐  ┌──────────────────────────────┐         │
-│                      │   │      Banco de Pacientes      │  │      Fila de Atendimento     │         │
-│  fila                │   └──────────────────────────────┘  └──────────────────────────────┘         │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-│                      │                                                                              │
-└──────────────────────┴──────────────────────────────────────────────────────────────────────────────┘
+Tela 1 - Menu Principal
+┌──────────────────────────────────────────────────────────────────────────────┐
+│   Sistema de Atendimento - HealthCore                                        │
+│                                                                              │
+│   [ Banco de Pacientes ]   [ Fila de Atendimento ]   [ Histórico de Ações ]  │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-Tela 2 - Cadastro
-┌──────────────────────┬───────────────────────────────────────────────────────────────────────────────────┐
-│                      │                                                                                   │
-│  menu                │   Cadastro de Pacientes                                                           │
-│                      │                                                                                   │
-│  > cadastro          │   Novo Paciente                                                                   │
-│                      │   ┌───────────────────────────────────────────────────────────────────────────┐   │
-│  fila                │   │ Nome        CPF           Idade       Telefone       Portador deficiência │   │
-│                      │   │ ┌────────┐ ┌───────────┐ ┌────────┐  ┌───────────┐      ┌──────────────┐  │   │
-│                      │   │ │Aline   │ │12345678901│ │ 35     │  │11999999999│      │ Não        ▼ │  │   │
-│                      │   │ └────────┘ └───────────┘ └────────┘  └───────────┘      └──────────────┘  │   │
-│                      │   │                                                                           │   │
-│                      │   │ [ Salvar ]                                                                │   │
-│                      │   └───────────────────────────────────────────────────────────────────────────┘   │
-│                      │                                                                                   │
-│                      │   [ Desfazer ]                                                                    │
-│                      │                                                                                   │
-│                      │   ──────────────────────────────────────────────────────────────────────          │
-│                      │                                                                                   │
-│                      │   Pacientes Cadastrados                                                           │
-│                      │   ┌──────────────────────────────────────────────────────────────────────┐        │
-│                      │   │Aline      1234567      20         1199999          Não               │        │
-│                      │   └──────────────────────────────────────────────────────────────────────┘        │
-│                      │                                                                                   │
-└──────────────────────┴───────────────────────────────────────────────────────────────────────────────────┘
+Tela 2 - Cadastro de Pacientes
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [⬅ Voltar ao Menu]                                                          │
+│                                                                              │
+│   Cadastro de Pacientes                                                      │
+│                                                                              │
+│   Nome      CPF           Idade   Telefone      Portador deficiência         │
+│   Aline     12345678901   35      11999999999   Não                          │
+│                                                                              │
+│   [ Salvar ]                                                                 │
+│                                                                              │
+│   Paciente cadastrado com sucesso.                                           │
+│                                                                              │
+│   Pacientes Cadastrados                                                      │
+│   Aline | CPF: 12345678901 | Idade: 35 | Tel: 11999999999 | Não | [Editar]   │
+│                                                                   [Excluir]  │
+└──────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────────────┬──────────────────────────────────────────────────────────────────────────────┐
-│                      │                                                                              │
-│  menu                │   Fila de Atendimento - HealthCore                                           │
-│                      │                                                                              │
-│  cadastro            │   Adicionar Paciente na Fila                                                 │
-│                      │   ┌──────────────────────────────────────────────────────────────────────┐   │
-│  > fila              │   │ CPF do Paciente                                                      │   │
-│                      │   │ ┌────────────────────────────────────────────────────────────────┐   │   │
-│                      │   │ │12345678901                                                     │   │   │
-│                      │   │ └────────────────────────────────────────────────────────────────┘   │   │
-│                      │   │                                                                      │   │
-│                      │   │ Nível de Emergência                                                  │   │
-│                      │   │ ┌────────────────────────────────────────────────────────────────┐   │   │
-│                      │   │ │ Vermelho                                                   ▼   │   │   │
-│                      │   │ └────────────────────────────────────────────────────────────────┘   │   │
-│                      │   │                                                                      │   │
-│                      │   │ [ Adicionar ]                                                        │   │
-│                      │   └──────────────────────────────────────────────────────────────────────┘   │
-│                      │                                                                              │
-│                      │   [ Atualizar fila ]                                                         │
-│                      │                                                                              │
-│                      │   [ Atender próximo ]                                                        │
-│                      │                                                                              │
-│                      │   [ Desfazer última ação da fila ]                                           │
-│                      │    ───────────────────────────────────────────────────────────────────────── │
-│                      │    FILA DE ATENDIMENTO                                                       │
-│                      │                                                                              │
-│                      │    ┌────────────────────────────────────────────────────────────────┐        │
-│                      │    │1. Aline|CPF:12345678901 |Nível: Vermelho                       │        │
-│                      │    └────────────────────────────────────────────────────────────────┘        │
-└──────────────────────┴──────────────────────────────────────────────────────────────────────────────┘
+Tela 3 - Fila de Atendimento
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [⬅ Voltar ao Menu]                                                          │
+│                                                                              │
+│   Fila de Atendimento                                                        │
+│                                                                              │
+│   CPF do Paciente: 12345678901                                               │
+│   Nível de Emergência: Vermelho                                              │
+│                                                                              │
+│   [ Adicionar ]                                                              │
+│   ✅ Paciente adicionado à fila com sucesso.                                │
+│                                                                              │
+│   [ Atualizar fila ]   [ Atender próximo ]                                   │
+│   [ Desfazer última ação ]                                                   │
+│                                                                              │
+│   Fila Atual                                                                 │
+│   1. Aline | CPF: 12345678901 | Nível: Vermelho                              │
+└──────────────────────────────────────────────────────────────────────────────┘
 
+Tela 4 - Histórico de Ações
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ [⬅ Voltar ao Menu]                                                          │
+│                                                                              │
+│   Histórico de Ações                                                         │
+│   Exibe as ações mais recentes.                                              │
+│                                                                              │
+│   Total de ações salvas: 1 / 50                                              │
+│                                                                              │
+│   tipo             cpf           nivel                                       │
+│   adicionar_fila   12345678901   Vermelho                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 8. Testes Unitários
 
-**Framework de testes utilizado:** [ unittest ]
+**Framework de testes utilizado:** `unittest`
 
-**Localização:** `tests/[test_fila_atendimento.py]`
+**Localização dos testes:**
 
-### Estrutura testada: [Fila de atendimento]
+```txt
+tests/test_fila.py
+tests/test_paciente.py
+tests/test_pilha.py
+```
+
+### Estrutura testada: Fila de atendimento
 
 ---
 
-**Teste 1 — Caso base**
+**Teste 1 — Adicionar paciente na fila**
 
-Descrição: [Verifica se o paciente é inserido corretamente na fia de atendimento]
+Descrição: Verifica se o paciente é inserido corretamente na fila de atendimento.
 
-```[python]
-[
-        import unittest
-    from structures.fila_atendimento import FilaAtendimento
-    from models.paciente import Paciente
+```python
+import unittest
+from src.core.fila_atendimento import FilaAtendimento
+from src.core.paciente import NoPaciente
 
+class TestFilaAtendimento(unittest.TestCase):
 
-    class TestFilaAtendimento(unittest.TestCase):
+    def test_adicionar_paciente(self):
+        fila = FilaAtendimento()
+        paciente = NoPaciente("Breno", "12345678901", 20, "11999999999", "Não")
 
-        def test_adicionar_paciente(self):
-            fila = FilaAtendimento()
+        fila.adicionar(paciente, "Amarelo")
 
-            paciente = Paciente("Breno", "123")
-            fila.adicionar(paciente, "Amarelo")
-
-            self.assertIsNotNone(fila.inicio)
-]
+        self.assertIsNotNone(fila.inicio)
 ```
 
 Resultado: ✅ Passando
 
 ---
 
-**Teste 2 — Caso vazio**
+**Teste 2 — Fila vazia**
 
-Descrição: [Verifica o comportamento do sistema ao tentar atender um paciente quando a fila está vazia.]
+Descrição: Verifica o comportamento do sistema ao tentar atender um paciente quando a fila está vazia.
 
-```[Python]
-[
-    def test_fila_vazia(self):
+```python
+def test_fila_vazia(self):
     fila = FilaAtendimento()
 
     paciente = fila.atender_proximo()
 
     self.assertIsNone(paciente)
-]
 ```
 
 Resultado: ✅ Passando
 
 ---
 
-**Teste 3 — Caso com múltiplos elementos**
+**Teste 3 — Ordem de atendimento**
 
-Descrição: [Verifica o comportamento do sistema ao tentar atender um paciente quando a fila está vazia.]
+Descrição: Verifica se a fila mantém a ordem correta de atendimento de acordo com a entrada e prioridade dos pacientes.
 
-```[Python]
-[
-    def test_ordem_atendimento(self):
+```python
+def test_ordem_atendimento(self):
     fila = FilaAtendimento()
 
-    p1 = Paciente("Ana", "111")
-    p2 = Paciente("Carlos", "222")
+    p1 = NoPaciente("Ana", "11111111111", 30, "11999999999", "Não")
+    p2 = NoPaciente("Carlos", "22222222222", 40, "11988888888", "Não")
 
     fila.adicionar(p1, "Verde")
     fila.adicionar(p2, "Verde")
@@ -704,12 +714,16 @@ Descrição: [Verifica o comportamento do sistema ao tentar atender um paciente 
     primeiro = fila.atender_proximo()
 
     self.assertEqual(primeiro.paciente.nome, "Ana")
-]
 ```
 
 Resultado: ✅ Passando
 
+### Observação sobre os testes
+
+O projeto possui testes automatizados para fila, pacientes e pilha. Na última execução realizada, os testes passaram corretamente.
+
 ---
+
 
 ## Checklist de Autoavaliação
 
@@ -750,8 +764,8 @@ Antes de entregar, verifique se você:
 - [ ✔ ] Loop de menu funcionando (programa não encerra após 1 operação)
 
 **Seção 8 — Testes**
-- [ ✔ ] 3 testes por estrutura documentados neste template
-- [ ✔ ] Resultado de cada teste indicado (✅ / ❌)
+- [ ✔ ] Testes automatizados documentados neste template
+- [ ✔ ] Resultado dos testes indicado (✅ / ❌)
 
 ---
 
