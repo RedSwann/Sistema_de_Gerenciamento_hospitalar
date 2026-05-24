@@ -18,14 +18,14 @@ def ui_fila():
     if "fila" not in st.session_state:
         st.session_state.fila = FilaAtendimento()
 
-    if "pilha" not in st.session_state:
-        st.session_state.pilha = Pilha()
+    if "historico" not in st.session_state:
+        st.session_state.historico = Pilha()
 
     if "fila_service" not in st.session_state:
         st.session_state.fila_service = FilaService(
             st.session_state.lista,
             st.session_state.fila,
-            st.session_state.pilha
+            st.session_state.historico
         )
 
     service = st.session_state.fila_service
@@ -33,10 +33,20 @@ def ui_fila():
 
     st.title("Fila de Atendimento")
 
+    if "mensagem_fila" in st.session_state:
+        tipo, mensagem = st.session_state.mensagem_fila
+        if tipo == "sucesso":
+            st.success(mensagem)
+        elif tipo == "aviso":
+            st.warning(mensagem)
+        else:
+            st.error(mensagem)
+        del st.session_state.mensagem_fila
+
     # ================= ADICIONAR PACIENTE =================
     with st.form("fila_form"):
 
-        cpf = st.text_input("CPF do Paciente")
+        cpf = st.text_input("CPF do Paciente", max_chars=11, placeholder="Somente números")
 
         nivel = st.selectbox(
             "Nível de Emergência",
@@ -53,14 +63,12 @@ def ui_fila():
             else:
                 st.error(msg)
 
-            st.rerun()
-
     # ================= BOTÕES DE CONTROLE =================
     col1, col2 = st.columns(2)
 
     if col1.button("Atualizar fila", use_container_width=True):
         fila.atualizar_fila()
-        st.rerun()
+        st.success("Fila atualizada com sucesso.")
 
     if col2.button("Atender próximo", use_container_width=True):
         ok, msg = service.atender()
@@ -70,18 +78,13 @@ def ui_fila():
         else:
             st.warning(msg)
 
-        st.rerun()
-
     if st.button("Desfazer última ação", use_container_width=True):
-
         ok, msg = service.desfazer()
 
         if ok:
             st.success(msg)
         else:
             st.warning(msg)
-
-        st.rerun()
 
     # ================= FILA ATUAL =================
     st.divider()
