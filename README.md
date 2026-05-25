@@ -37,6 +37,6 @@ Para executar o sistema é necessário possuir instalado:
 2. Acesse a pasta do sistema;
 3. Execute o arquivo "Iniciar Sistema.bat":
 
-### Autores
+## Autores
 - Breno Ribeiro
 - Renata Mayumi Iuvata 
