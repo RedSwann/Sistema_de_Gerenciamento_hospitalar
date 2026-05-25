@@ -36,3 +36,7 @@ Para executar o sistema é necessário possuir instalado:
 1. Baixe o o projeto;
 2. Acesse a pasta do sistema;
 3. Execute o arquivo "Iniciar Sistema.bat":
+
+### Autores
+- Breno Ribeiro
+- Renata Mayumi Iuvata 
